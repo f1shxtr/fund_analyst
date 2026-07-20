@@ -47,6 +47,6 @@ fund-flow-analyst-windows.zip
 发布新版本示例：
 
 ```powershell
-git tag v1.0.1
-git push origin v1.0.1
+git tag v下一个版本号
+git push origin v下一个版本号
 ```
