@@ -444,6 +444,7 @@ class FundFlowApp(tk.Tk):
 
         self.file_var = tk.StringVar()
         self.sheet_var = tk.StringVar()
+        self.header_row_var = tk.StringVar(value="1")
         self.date_col = tk.StringVar()
         self.sender_col = tk.StringVar()
         self.receiver_col = tk.StringVar()
@@ -475,10 +476,17 @@ class FundFlowApp(tk.Tk):
         for idx in range(8):
             mapping.columnconfigure(idx, weight=1 if idx % 2 else 0)
 
-        self.date_combo = self._combo(mapping, "日期", self.date_col, 0)
-        self.sender_combo = self._combo(mapping, "汇出方/付款人", self.sender_col, 2)
-        self.receiver_combo = self._combo(mapping, "汇入方/收款人", self.receiver_col, 4)
-        self.amount_combo = self._combo(mapping, "金额", self.amount_col, 6)
+        ttk.Label(mapping, text="表头行").grid(row=0, column=0, sticky="w")
+        self.header_spin = ttk.Spinbox(mapping, from_=1, to=1, width=8, textvariable=self.header_row_var, command=self.apply_header_row)
+        self.header_spin.grid(row=0, column=1, sticky="w", padx=(6, 12), pady=(0, 8))
+        self.header_spin.bind("<Return>", lambda _event: self.apply_header_row())
+        self.header_spin.bind("<FocusOut>", lambda _event: self.apply_header_row())
+        ttk.Button(mapping, text="应用表头行", command=self.apply_header_row).grid(row=0, column=2, sticky="w", padx=(0, 12), pady=(0, 8))
+
+        self.date_combo = self._combo(mapping, "日期", self.date_col, 0, row=1)
+        self.sender_combo = self._combo(mapping, "汇出方/付款人", self.sender_col, 2, row=1)
+        self.receiver_combo = self._combo(mapping, "汇入方/收款人", self.receiver_col, 4, row=1)
+        self.amount_combo = self._combo(mapping, "金额", self.amount_col, 6, row=1)
 
         options = ttk.LabelFrame(self, text="链条规则", padding=12)
         options.grid(row=2, column=0, sticky="ew", padx=12, pady=6)
@@ -519,10 +527,10 @@ class FundFlowApp(tk.Tk):
         status.columnconfigure(0, weight=1)
         ttk.Label(status, textvariable=self.status_var).grid(row=0, column=0, sticky="w")
 
-    def _combo(self, parent, label, var, col):
-        ttk.Label(parent, text=label).grid(row=0, column=col, sticky="w")
+    def _combo(self, parent, label, var, col, row=0):
+        ttk.Label(parent, text=label).grid(row=row, column=col, sticky="w")
         combo = ttk.Combobox(parent, textvariable=var, state="readonly", width=20)
-        combo.grid(row=0, column=col + 1, sticky="ew", padx=(6, 12))
+        combo.grid(row=row, column=col + 1, sticky="ew", padx=(6, 12))
         return combo
 
     def choose_file(self):
@@ -548,7 +556,7 @@ class FundFlowApp(tk.Tk):
                 self.sheet_combo.configure(values=["CSV"], state="disabled")
                 self.sheet_var.set("CSV")
                 self.rows = read_csv(path)
-                self.prepare_headers()
+                self.prepare_headers(auto_detect=True)
         except Exception as exc:
             messagebox.showerror("读取失败", str(exc))
             self.status_var.set("读取失败")
@@ -557,12 +565,27 @@ class FundFlowApp(tk.Tk):
         if not self.workbook:
             return
         self.rows = self.workbook.read_sheet(self.sheet_var.get())
-        self.prepare_headers()
+        self.prepare_headers(auto_detect=True)
 
-    def prepare_headers(self):
+    def apply_header_row(self):
+        self.prepare_headers(auto_detect=False)
+
+    def prepare_headers(self, auto_detect=False):
         if not self.rows:
             raise ValueError("文件没有可读取的数据")
-        self.header_idx = first_header_row(self.rows)
+        if auto_detect:
+            self.header_idx = first_header_row(self.rows)
+            self.header_row_var.set(str(self.header_idx + 1))
+        else:
+            try:
+                header_row = int(self.header_row_var.get())
+            except ValueError as exc:
+                raise ValueError("表头行必须是数字") from exc
+            if header_row < 1 or header_row > len(self.rows):
+                raise ValueError(f"表头行必须在 1 到 {len(self.rows)} 之间")
+            self.header_idx = header_row - 1
+
+        self.header_spin.configure(to=max(len(self.rows), 1))
         self.headers = clean_headers(self.rows[self.header_idx])
         values = self.headers
         for combo in (self.date_combo, self.sender_combo, self.receiver_combo, self.amount_combo):
@@ -573,7 +596,8 @@ class FundFlowApp(tk.Tk):
         self.receiver_col.set(guess_column(values, ["汇入方", "收款人", "收款方", "转入方", "转入户名", "贷方户名", "RECEIVER", "TO"]))
         self.amount_col.set(guess_column(values, ["交易金额", "发生额", "金额", "转账金额", "AMOUNT"]))
 
-        self.status_var.set(f"已读取 {len(self.rows) - self.header_idx - 1} 行数据；请确认字段对应后分析")
+        data_rows = max(len(self.rows) - self.header_idx - 1, 0)
+        self.status_var.set(f"已使用第 {self.header_idx + 1} 行作为表头，读取 {data_rows} 行数据；请确认字段对应后分析")
 
     def run_analysis(self):
         try:
