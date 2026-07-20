@@ -49,7 +49,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
           Copy-Item "excel\dist\fund-flow-analyst.exe" "$packageDir\fund-flow-analyst.exe"
           Copy-Item "excel\README.md" "$packageDir\README.md"
-          Copy-Item "excel\sample_transactions.csv" "$packageDir\示例数据.csv"
+          Copy-Item "excel\sample_transactions.csv" "$packageDir\sample_transactions.csv"
           Compress-Archive -Path "$packageDir\*" -DestinationPath "fund-flow-analyst-windows.zip" -Force
 
       - name: Resolve release tag
