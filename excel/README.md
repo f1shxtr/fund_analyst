@@ -26,6 +26,8 @@ python fund_flow_app.py
 
 打包完成后，把 `dist\资金流向分析工具.exe` 发给用户即可。exe 版本不需要用户安装 Python、第三方库，也不需要配置清华源或其他 pip 镜像源。
 
+如果是在 GitHub Releases 页面下载，请下载 `fund-flow-analyst-windows.zip`，不要下载 GitHub 自动显示的 `Source code (zip)`；源码包里不会有 exe。
+
 当前程序只使用 Python 标准库，不依赖 pandas/openpyxl 等第三方库；清华源只在开发者打包时自动安装 PyInstaller 失败或重试时可能相关，普通用户不会用到。
 
 ## 输入表字段

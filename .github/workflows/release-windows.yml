@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version, for example v1.0.0"
+        description: "Release version, for example v1.0.1"
         required: true
-        default: "v1.0.0"
+        default: "v1.0.1"
 
 permissions:
   contents: write
@@ -39,7 +39,7 @@ jobs:
           --clean
           --onefile
           --windowed
-          --name "资金流向分析工具"
+          --name "fund-flow-analyst"
           fund_flow_app.py
 
       - name: Package zip
@@ -47,10 +47,10 @@ jobs:
         run: |
           $packageDir = "release-package"
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
-          Copy-Item "excel\dist\资金流向分析工具.exe" "$packageDir\资金流向分析工具.exe"
-          Copy-Item "excel\README.md" "$packageDir\使用说明.md"
+          Copy-Item "excel\dist\fund-flow-analyst.exe" "$packageDir\fund-flow-analyst.exe"
+          Copy-Item "excel\README.md" "$packageDir\README.md"
           Copy-Item "excel\sample_transactions.csv" "$packageDir\示例数据.csv"
-          Compress-Archive -Path "$packageDir\*" -DestinationPath "资金流向分析工具-windows.zip" -Force
+          Compress-Archive -Path "$packageDir\*" -DestinationPath "fund-flow-analyst-windows.zip" -Force
 
       - name: Resolve release tag
         shell: pwsh
@@ -68,7 +68,7 @@ jobs:
         run: |
           gh release view "$env:RELEASE_TAG" 2>$null
           if ($LASTEXITCODE -ne 0) {
-            gh release create "$env:RELEASE_TAG" "资金流向分析工具-windows.zip" --title "资金流向分析工具 $env:RELEASE_TAG" --notes "下载 zip，解压后双击 exe 即可运行。"
+            gh release create "$env:RELEASE_TAG" "fund-flow-analyst-windows.zip" --title "fund-flow-analyst $env:RELEASE_TAG" --notes "Download fund-flow-analyst-windows.zip, unzip it, then run fund-flow-analyst.exe. Do not download Source code zip."
           } else {
-            gh release upload "$env:RELEASE_TAG" "资金流向分析工具-windows.zip" --clobber
+            gh release upload "$env:RELEASE_TAG" "fund-flow-analyst-windows.zip" --clobber
           }

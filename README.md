@@ -5,9 +5,11 @@
 ## 普通用户下载使用
 
 1. 打开 GitHub Releases 页面。
-2. 下载 `资金流向分析工具-windows.zip`。
+2. 下载 `fund-flow-analyst-windows.zip`。
 3. 解压 zip。
-4. 双击 `资金流向分析工具.exe` 运行。
+4. 双击 `fund-flow-analyst.exe` 运行。
+
+注意：不要下载 GitHub 自动显示的 `Source code (zip)` 或 `Source code (tar.gz)`，那是源码包，里面不会有 exe。
 
 exe 版本不需要安装 Python，不需要安装第三方库，也不需要配置 pip、清华源或其他镜像源。
 
@@ -39,12 +41,12 @@ excel\dist\资金流向分析工具.exe
 这个仓库包含 GitHub Actions 发布流程。推送版本 tag 后会自动构建 Windows exe，并在 GitHub Release 中上传：
 
 ```text
-资金流向分析工具-windows.zip
+fund-flow-analyst-windows.zip
 ```
 
 发布新版本示例：
 
 ```powershell
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.0.1
+git push origin v1.0.1
 ```
